@@ -8,12 +8,12 @@
 <script type="application/javascript">
  
 //debug variables
-var use_ASTB = true; //switch to true if installed on set top box to use API
-var debug_messages = false; //if true and using ASTB, debug to console, otherwise javascript alerts
-var toggle_background_colour = false; //alternate channel background
+var use_ASTB = false; //switch to true if installed on set top box to use API --> Désactiver ASTB
+var debug_messages = true; //if true and using ASTB, debug to console, otherwise javascript alerts
+var toggle_background_colour = true; //alternate channel background
 
-var start_channel = 0;
-var end_channel = 0;
+var start_channel = 1; // première chaine
+var end_channel = 10; // dernière chaine
 
 //Dynamic script elements
  chan_init();
@@ -83,8 +83,8 @@ function processRemotePanel()
         deleteAllRows('show1');
 
         //highest and lowest channels in range (starting point)
-        local_start_channel = 1;
-        local_end_channel = 1;
+        local_start_channel = 1; // 
+        local_end_channel = 10;
 
 
         cnt1=1;
@@ -676,7 +676,7 @@ function passWord() {
 	<!--<div id='protected'>-->
 	<div class="box">
 
-	<form name="formId" id="formId" action="#" style="" >
+	<form name="formId" id="formId" action="#" > <!-- j'ai enlevé le 'style=""' -->
 	<h3>Select Range of Channel Numbers to Edit</h3>
 	<div style="float:left;">
 	From<input type="text" name="from" id="from" />
@@ -695,7 +695,7 @@ function passWord() {
 <div><a href="#" onClick="displayedit(11,20); doClick(this);">Channels 11 - 20</a></div>
 <font size="-1">**Please enter stream and name before selecting save or channel will not be stored**</font>
 <div id="hiddentitles" style="display:none">
- 		<table width="550px" border="0" style="">
+ 		<table width="550px" border="0"> <!-- j'ai enlevé le 'style=""' -->
   		<tr width="100%">
     	<td width="20%">Channel #</td>
    	<td width="40%">Stream</td>
