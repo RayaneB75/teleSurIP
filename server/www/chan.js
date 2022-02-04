@@ -10,10 +10,10 @@ var EPG_on = false;
 var Teletext_on = false;
 
 /* last epg channel */
-var last_epg_channel = 0;
+var last_epg_channel = 10;
 
 /* how many channels are in the EPG list */
-var active_channel_count = 0;
+var active_channel_count = 10;
 
 /* map of list index to channel number */
 var index_channel_map = new Array();
@@ -686,16 +686,18 @@ else
 {
 	play(prevchan);
 }
-//		alert("playing last selected channel");
-//        play(prevchan);
-//           }
-//    else
-//    {
-//       ASTB.DebugString("No cookie. So use default");
-//       play(initial);
-//    }        
-//  }
-//--!>
+/*
+		alert("playing last selected channel");
+        play(prevchan);
+           }
+    else
+    {
+       ASTB.DebugString("No cookie. So use default");
+       play(initial);
+    }        
+  }
+--!>
+*/
 
 
 }
