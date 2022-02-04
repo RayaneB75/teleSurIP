@@ -1,0 +1,98 @@
+@charset "utf-8";
+/* CSS Document */
+
+body { background: transparent; }
+#channel_popup {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 65px;
+        height: 40px;
+        background: grey;
+        /*visibility: hidden;*/
+}
+
+p.channel_popup {
+        color: white;
+        vertical-align: text-bottom;
+        font-family: "Verdana";
+        text-align: left;
+        font-size: 20pt;
+        margin-left: 5px;
+        margin-top: 0px;
+}
+
+#channel_info {
+        position: absolute;
+        top: 10px;
+        left: 71px;
+        height: 40px;
+        width: 300px;
+        background: transparent;
+/*      visibility: hidden;*/
+}
+
+p.channel_info {
+        color: white;
+        vertical-align: text-bottom;
+        font-family: "Verdana";
+        text-align: left;
+        font-size: 20pt;
+        margin-top: 0px;
+        margin-left: 5px;
+}
+
+#channel_menu {
+        position: top;
+        top: 10px;
+        left: 70px;
+        height: 100px;
+        width: 100px;
+        border: 1px;
+/*      background: green; 
+        background: grey; 
+        visibility: hidden;*/
+}
+
+table.menutable {
+        border: 0px;
+        padding: 0px;
+}
+
+td.menuheader {
+        font-weight: bold;
+        text-align: left;
+        background: #0000AF; 
+        font-size: 16px;
+        color: yellow;
+}
+
+td.spacer {
+        padding: 2px;
+}
+
+td.menuitem {
+        background: #0000AF;
+        color: yellow;
+        font-size: 14px;
+}
+
+td.menuselected {
+        background: yellow;
+        color: blue;
+        font-size: 14px;
+}
+
+.box {
+    background: none repeat scroll 0 0 #ffad00;
+    border: 2px groove #000000;
+    border-collapse: collapse;
+    height: 50%;
+    margin: auto;
+    padding: 31px;
+    width: 550px;
+	border-radius:10px;
+}
+.bottom{
+	margin-top:2%;
+}

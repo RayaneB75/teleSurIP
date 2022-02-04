@@ -1,0 +1,731 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Channel Configuration</title>
+ <script type="text/javascript" src="chan.js"></script>
+<link rel="stylesheet" type="text/css" href="style.css" />
+<script type="application/javascript">
+ 
+//debug variables
+var use_ASTB = true; //switch to true if installed on set top box to use API
+var debug_messages = false; //if true and using ASTB, debug to console, otherwise javascript alerts
+var toggle_background_colour = false; //alternate channel background
+
+var start_channel = 0;
+var end_channel = 0;
+
+//Dynamic script elements
+ chan_init();
+//Requests the chnls.txt file using a cross domain call.
+
+function getChnlFile()
+{
+
+        //build up the request
+
+        // get url with JSON file handler code
+	var url_string = document.getElementById('source_url').value;
+
+        //get user id
+        var user_id_string = chan_init(); document.getElementById('user_id').value;
+
+        //get filename
+        var filename_string = document.getElementById('file_name').value;
+
+        //put it all together
+
+        var request = url_string + 'getConfigFile.php?user_id=' + user_id_string + '&file_name=' + filename_string;
+
+        //Construct script node and add it to the document, causing the Get request
+	//to the PHP script
+
+        //Check for the existing script node
+        var oScript = document.getElementById("dynamic_script");
+
+        // Get the script tag, if it exists
+        var head = document.getElementsByTagName("head").item(0);
+        // Remove the tag, if it exists to avoid the increase in size
+        if (oScript)
+        {
+        	head.removeChild(oScript);
+        }
+
+        script = document.createElement("script");
+        script.setAttribute("id", "dynamic_script");
+        script.setAttribute("type", "text/javascript");
+        script.setAttribute("src", request);
+
+        //alert(request);
+
+        // all set, add the script
+        head.appendChild(script);
+}
+
+function populateRemotePanel(remote_file_text)
+{
+        var file_panel_ptr = document.getElementById('remote_file_panel');
+
+        if(file_panel_ptr)
+        {
+        	file_panel_ptr.innerText = remote_file_text;
+        }
+
+        alert('File imported successfully');
+
+}
+
+function processRemotePanel()
+{
+        ///////////////////////////////////////////////////////////////////////
+	     // set up channel table
+        //first clear up all rows just in case
+        deleteAllRows('show1');
+
+        //highest and lowest channels in range (starting point)
+        local_start_channel = 1;
+        local_end_channel = 1;
+
+
+        cnt1=1;
+
+        //get the table ptr
+        var tble_ptr = document.getElementById("show1");
+        //create table body
+        var tbl_body = document.createElement("tbody");
+
+        var background_grey = true;
+        ////////////////////////////////////////////////////////////////////////
+
+        var file_panel_ptr = document.getElementById('remote_file_panel');
+        if(file_panel_ptr)
+        {
+        	var file_text = file_panel_ptr.innerText;
+                var channel_arr = file_text.split(/\r\n|\r|\n/);
+
+                var array_size = channel_arr.length;
+
+                for ( var i=0, len=array_size; i<len; ++i )
+                {
+                	var line = channel_arr[i];
+
+                        //strip white space
+                        line = line.trim();
+
+                        // if it doesn't start with a hash and has text in it, its probably a channel def, process it
+                        if(!(line.indexOf('#', 0) == 0) && line!='')
+                        {
+                        	if(line.indexOf('?chan_name=') >=0)
+                                {
+                                	var channel_info = line.split('?chan_name=');
+                                }
+                                else
+                                {
+                                	var channel_info = new Array();
+                                	channel_info[0] = line;
+                                        channel_info[1] = 'Not Defined';
+                                }
+                                //split out channel number and stream (i.e split on ': ')  NOTE COLON - SPACE
+                                var channel_stream = channel_info[0].split(': ');
+
+                                //trim leading zeros from channel number
+                                channel_stream[0] = trimLeadingZeros(channel_stream[0]);
+
+                                //echo them all out now to test
+                                //alert ('Channel number = ' + channel_stream[0]);
+                                //alert ('Channel stream = ' + channel_stream[1]);
+                                //alert ('Channel name = ' + channel_info[1]);
+                                // create a channel entry
+	                             ////////////////////////////////////////////////////////
+	                             // TODO: again similar to use in displayEdit
+	                             // create function
+	                             //use ASTB to get specific channel information
+
+	                        var chan_number = channel_stream[0];
+	                        var chan_stream = channel_stream[1];
+		                var chan_name = channel_info[1];
+                                ASTB.DebugString( "chan_name=" + chan_name );
+
+                                //push out the start and end channel numbers
+                                if(chan_number >= local_end_channel)
+                                {
+                                	local_end_channel = chan_number;
+                                }
+
+                                if(chan_number <= local_start_channel)
+                                {
+                                	local_start_channel = chan_number;
+                                }
+
+
+		        	       //use DOM to construct row as follows
+		                // <tr><td>X:</td><td><input type='text' id='stream_X' value='var steam'/></td><td><input type='text' id='name_X' value='var name'/></td></tr>
+		                // checkbox for save <td><input type='text' id='name_X' value='var name'/></td>
+		                // create new row
+		                var tbl_row = document.createElement("tr");
+
+		                //toggle background colour
+		                if(toggle_background_colour)
+		                {
+		                	if(background_grey)
+		                        {
+		                        	//set background to grey
+		                                tbl_row.style.backgroundColor = '#DDDDDD';
+		                        }
+		                        else
+		                        {
+		                        	//set background to white
+		                                tbl_row.style.backgroundColor = '#FFFFFF';
+
+		                        }
+
+		                        //toggle
+		                        background_grey = !background_grey;
+		                }
+
+		                tbl_row.width = '100%';
+
+		                //channel number cell
+		                var tbl_cell_channel = document.createElement("td");
+		                tbl_cell_channel.style.width = '20%';
+		                var channel_cellText = document.createTextNode(chan_number + ':');
+		                tbl_cell_channel.appendChild(channel_cellText);
+		                tbl_row.appendChild(tbl_cell_channel);
+
+		                //stream input cell
+		                var tbl_cell_steam = document.createElement("td");
+		                tbl_cell_steam.style.width = '40%';
+		                stream_input = document.createElement('input');
+			        stream_input.size = 30;
+			        stream_input.id = 'stream_' + chan_number;
+		                stream_input.value = chan_stream;
+
+			        tbl_cell_steam.appendChild(stream_input);
+			        tbl_row.appendChild(tbl_cell_steam);
+
+		                //channel name input cell
+		                var tbl_cell_name = document.createElement("td");
+		                tbl_cell_name.style.width = '30%';
+		                name_input = document.createElement('input');
+			        name_input.size = 20;
+			        name_input.id = 'name_' + chan_number;
+		                name_input.value = chan_name;
+
+			        tbl_cell_name.appendChild(name_input);
+			        tbl_row.appendChild(tbl_cell_name);
+
+		                //select for save
+		                var tbl_cell_select = document.createElement("td");
+		                tbl_cell_select.style.width = '10%';
+		                tbl_cell_select.style.textAlign = 'center';
+		                var select_cb = document.createElement( "input" );
+		 		select_cb.type = "checkbox";
+				select_cb.id = "selected_" + chan_number;
+		 		select_cb.value = "1";
+				select_cb.checked = true;
+
+		                tbl_cell_select.appendChild(select_cb);
+		                tbl_row.appendChild(tbl_cell_select);
+
+
+		                // add the row to the end of the table body
+		            	tbl_body.appendChild(tbl_row);
+                        }
+
+                }
+                //append table body to show1
+        	tble_ptr.appendChild(tbl_body);
+
+                //update the globals
+                start_channel = local_start_channel;
+        	end_channel  = local_end_channel;
+
+                var debug_string = 'start channel = ' + start_channel + ' : end channel = ' + end_channel;
+                debug_alert(debug_string);
+
+        }
+}
+
+
+function errorHandler(err_message)
+{
+	alert(err_message);
+}
+
+
+
+function importRemote()
+{
+	var file_panel_ptr = document.getElementById('remote_file_panel');
+
+        if(file_panel_ptr)
+        {
+        	file_panel_ptr.src = 'http://10.172.2.89/chanman/';
+        }
+}
+
+function popupfile()
+{
+	var file_panel_ptr = document.getElementById('remote_file_panel');
+        if(file_panel_ptr)
+        {
+        	var file_text = file_panel_ptr.innerText;
+
+                alert(file_text);
+        }
+}
+
+
+
+function deleteAllRows(table_id)
+{
+        var parent = document.getElementById(table_id);
+	while(parent.hasChildNodes())
+	{
+   		parent.removeChild(parent.firstChild);
+	}
+}
+
+
+function displayUserRange()
+{
+        l=parseInt(document.getElementById("from").value);
+	m=parseInt(document.getElementById("to").value);
+
+        if( l>m ) {
+        }
+
+        if( isNaN(l) || isNaN(m) || l < 1 || l > 999 || m < 1 || m > 999 ) 
+        {
+            alert( "Invalid range: please enter numbers between 1 and 999" );
+            return;
+        }
+        else if( l>m ) 
+        {
+            alert( "Invalid range: Second number must be larger than the first" );
+            return;
+        }
+        else {
+            displayedit(l,m);
+        }
+}
+
+function trimLeadingZeros(string_text)
+{
+  while (string_text.substr(0,1) == '0' && string_text.length>1)
+  {
+  	string_text = string_text.substr(1,9999);
+  }
+  return string_text;
+}
+
+
+//returns array arr[0] = stream, arr[1] = name
+function getChannelInfo(channel_number)
+{
+
+        var url_string = '';
+	if(use_ASTB)
+        {
+        	url_string = ASTB.GetChannel(channel_number);
+
+        }
+        else // debug, supply dummy url string using channel number
+        {
+        	url_string = 'igmp://225.242.100.' + channel_number + ':5000?chan_name=dummy name ' + channel_number;
+
+        }
+
+        //first split url string on '?chan_name='
+        var url_info_arr = url_string.split('?chan_name=');
+
+        //first array element = stream
+        var debug_string = 'first element = ' + url_info_arr[0];
+
+        //second element of should be name
+        debug_string += '\nsecond element = ' + url_info_arr[1];
+
+        debug_alert(debug_string);
+
+        return url_info_arr;
+
+
+}
+
+function debug_alert(debug_string)
+{
+	if(debug_messages)
+        {
+        	//if(use_ASTB) //use ASTB debug
+                if(0)
+                {
+
+                }
+                else //default javascript alert
+                {
+                	alert(debug_string);
+                }
+        }
+}
+
+function displayedit(local_start_channel, local_end_channel)
+{
+
+        //first clear up all rows just in case
+        deleteAllRows('show1');
+
+        //update the globals
+        start_channel = local_start_channel;
+        end_channel  = local_end_channel;
+
+        cnt1=1;
+
+        //get the table ptr
+        var tble_ptr = document.getElementById("show1");
+        //create table body
+        var tbl_body = document.createElement("tbody");
+
+        var background_grey = true;
+        for(o=start_channel;o<=end_channel;o++)
+        {
+        	//use ASTB to get specific channel information
+                var chan_info_arr = getChannelInfo(o);
+
+                var chan_stream = chan_info_arr[0];
+                var chan_name = chan_info_arr[1] || "" ;
+
+        	//use DOM to construct row as follows
+                // <tr><td>X:</td><td><input type='text' id='stream_X' value='var steam'/></td><td><input type='text' id='name_X' value='var name'/></td></tr>
+                // also add a check box to select for save <td><input type='text' id='name_X' value='var name'/></td>
+                // create new row
+                var tbl_row = document.createElement("tr");
+
+                //toggle background colour
+                if(toggle_background_colour)
+                {
+                	if(background_grey)
+                        {
+                        	//set background to grey
+                                tbl_row.style.backgroundColor = '#DDDDDD';
+                        }
+                        else
+                        {
+                        	//set background to white
+                                tbl_row.style.backgroundColor = '#FFFFFF';
+
+                        }
+
+                        //toggle
+                        background_grey = !background_grey;
+                }
+
+                tbl_row.width = '100%';
+
+                //channel number cell
+                var tbl_cell_channel = document.createElement("td");
+                tbl_cell_channel.style.width = '20%';
+                var channel_cellText = document.createTextNode(o + ':');
+                tbl_cell_channel.appendChild(channel_cellText);
+                tbl_row.appendChild(tbl_cell_channel);
+
+                //stream input cell
+                var tbl_cell_steam = document.createElement("td");
+                tbl_cell_steam.style.width = '40%';
+                stream_input = document.createElement('input');
+	        stream_input.size = 30;
+	        stream_input.id = 'stream_' + o;
+                stream_input.value = chan_stream;
+
+	        tbl_cell_steam.appendChild(stream_input);
+	        tbl_row.appendChild(tbl_cell_steam);
+
+                //channel name input cell
+                var tbl_cell_name = document.createElement("td");
+                tbl_cell_name.style.width = '30%';
+                name_input = document.createElement('input');
+	        name_input.size = 20;
+	        name_input.id = 'name_' + o;
+                name_input.value = chan_name;
+
+	        tbl_cell_name.appendChild(name_input);
+	        tbl_row.appendChild(tbl_cell_name);
+
+                //select for save
+                var tbl_cell_select = document.createElement("td");
+                tbl_cell_select.style.width = '10%';
+                tbl_cell_select.style.textAlign = 'center';
+                var select_cb = document.createElement( "input" );
+ 		select_cb.type = "hidden";
+		select_cb.id = "selected_" + o;
+ 		select_cb.value = "1";
+                if( chan_stream != "" && chan_name != "" ) {
+		    select_cb.checked = true;
+                }
+
+                tbl_cell_select.appendChild(select_cb);
+                tbl_row.appendChild(tbl_cell_select);
+
+
+                // add the row to the end of the table body
+            	tbl_body.appendChild(tbl_row);
+
+        }
+
+        //append table body to show1
+        tble_ptr.appendChild(tbl_body);
+
+
+
+
+}
+
+//this is just a guess
+function wipeChannels()
+{
+        if(use_ASTB)
+        {
+               	ASTB.WithChannels(0);
+                ASTB.SaveChannels();
+                ASTB.WithChannels(1);
+                ASTB.SaveChannels();
+        }
+
+        deleteAllRows('show1');
+
+        var debug_string = 'Wiping all saved channels....maybe';
+        debug_alert(debug_string);
+
+}
+
+function saveChannels()
+{
+        if(use_ASTB)
+        {
+        	ASTB.WithChannels(1);
+        }
+        for(o=start_channel;o<=end_channel;o++)
+        {
+        	//get attribs for this channel
+                var stream_index = 'stream_' + o;
+
+                // with import, need to check channel actually exists
+                if(document.getElementById(stream_index))
+                {
+	                var channel_stream = document.getElementById(stream_index).value;
+
+	                var name_index = 'name_' + o;
+	                var channel_name = document.getElementById(name_index).value;
+
+	                var url_string = channel_stream + '?chan_name=' + channel_name;
+
+	                var selected_index = 'selected_' + o;
+	                if( channel_stream != "" && channel_name != "" )
+	                {
+		                if(use_ASTB)
+		                {
+		                	ASTB.SetChannel(o,url_string) ;
+		                }
+
+	                        var debug_string = 'Save Channel: ' + o + ' - ' + url_string + 'selected value: ' + document.getElementById(selected_index).value;
+	                	debug_alert(debug_string);
+	                }
+                        else {
+                                if(use_ASTB)
+                                {
+                                        ASTB.SetChannel(o,"") ;
+                                }
+                                document.getElementById(name_index).value = "";
+                                document.getElementById(stream_index).value = "";
+                        }
+                }
+
+
+        }
+
+        if(use_ASTB)
+        {
+        	ASTB.SaveChannels();
+        }
+
+}
+
+
+function col_hide()
+	{
+	 var col_text;
+	 col_text = getElementById("hiddentitles");
+	 if (col_text) {
+	 col_text.className=(col_text.className='hidden')?'unhidden':'unhidden';
+	 }
+	 
+	 }
+	
+function doClick(objRad){
+if (objRad.value=="0"){
+document.getElementById("hiddentitles").style.display='none'; //hide textbox
+
+}
+else{
+
+document.getElementById("hiddentitles").style.display='block'; //show textbox
+}
+}
+
+// code for adding confirmation message before wiping all channels is done
+
+function ConfirmChoice()
+{
+answer = confirm("Do you really want to delete ALL channels?")
+if (answer !=0)
+{
+wipeChannels();
+}
+}
+
+function SaveMessage()
+{
+alert("Save data")
+}
+
+function SaveandviewMessage()
+{
+alert("Save data and view video")
+}
+
+function viewvideo()
+{
+window.location.href = 'index.html';
+}
+
+function show()
+{
+        document.getElementById("formId").style.display="none";
+	document.getElementById("form").style.display="block";
+
+}
+function hide()
+{
+
+	document.getElementById("form").style.display="none";isplayedit(1,10); doClick(this);
+	document.getElementById("formId").style.display="block";
+
+}
+
+// this is the channel selection code area //
+
+function hideshow(which){
+//if (!document.getElementById) {
+//return;
+//}
+	if (which.style.display=="block") {
+		which.style.display="none";
+	} else {
+		which.style.display="block";
+	}
+}
+
+function showconfig() {
+        hideshow(document.getElementById('protected'));
+}
+
+
+function confbutton() {
+	hideshow(document.getElementById('but1'));
+}
+
+function passWord() {
+
+	if(!use_ASTB)
+        {
+                //no ASTB, just return true
+        	return true;
+        }
+	ASTB.DebugString("passWord() called");
+	var testV = 1;
+	var pass1 = prompt('Please Enter Your Password',' ');
+	while (testV < 6) {
+		if (!pass1) {
+			history.go(-1);
+				}
+		if (pass1.toLowerCase() == "letmein") {
+			confbutton(); 
+			showconfig();
+			break;
+		}
+		testV+=1;
+		var pass1 =
+		prompt('Access Denied - Password Incorrect, Please Try Again.','Password');
+		}
+	if (pass1.toLowerCase()!="password" & testV ==6) {
+		history.go(-1);
+		return " ";
+	}
+	}
+
+</script>
+</head>
+
+<body onload=" passWord(); confbutton(); displayedit(1,10); ">
+<div align="center" id='but1' style=display:none'>
+ 
+ 	<FORM>
+ <!-- <input type="button" value="Enter Channel Configuration Area" onClick="passWord(); confbutton();"> -->
+ 	</FORM>
+</div>
+<div id='protected' style='display:none'> 
+	<!--<div id='protected'>-->
+	<div class="box">
+
+	<form name="formId" id="formId" action="#" style="" >
+	<h3>Select Range of Channel Numbers to Edit</h3>
+	<div style="float:left;">
+	From<input type="text" name="from" id="from" />
+	</div>
+	<div style="float:left;" >
+
+	To <input type="text" name="to" id="to" />
+	</div>
+
+	<div style="float:left; clear:both;"></div>
+<div>
+<input type="button" name="edit" id="edit" value="Edit Range" onclick="displayUserRange(); doClick(this);"/>
+<h4>Or, Choose from a preset Range</h4>
+
+<div><a href="#" onClick="displayedit(1,10); doClick(this);">Channels 1 - 10</a></div>
+<div><a href="#" onClick="displayedit(11,20); doClick(this);">Channels 11 - 20</a></div>
+<font size="-1">**Please enter stream and name before selecting save or channel will not be stored**</font>
+<div id="hiddentitles" style="display:none">
+ 		<table width="550px" border="0" style="">
+  		<tr width="100%">
+    	<td width="20%">Channel #</td>
+   	<td width="40%">Stream</td>
+  		<td width="30%">Name</td>
+   	</tr>
+
+ 		</table>
+</div>
+<table width="550px" border="0" id="show1">
+</table>
+
+<table width="550px" border="0" id="buttons1">
+  <tr><td colspan="4">&nbsp;</td></tr>
+  <tr width="100%">
+    <td width="2%"><input type="button" name="save" value="Wipe All" onClick="wipeChannels();"/></td>
+    <td width="2%" align="left"><input type="button" name="Save changes and view video" value="Save / View Video" onClick="saveChannels(); SaveandviewMessage(); viewvideo();"/></td>
+    <td width="2%" align="left"><input type="button" name="Save changes" value="Save Channel Information" onClick="saveChannels(); SaveMessage();"/></td>
+
+  </tr>
+</table>
+</table>
+<table width="550px" border="0" id="buttons1">
+<td width="50%" align="right"><font size="-1">v 1.0</font></td>
+</table>
+</form>
+
+
+
+
+</body>
+</html>
+
+

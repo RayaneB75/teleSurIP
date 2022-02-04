@@ -1,0 +1,266 @@
+ <html>
+    <head>
+ <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+ <title>Working channel zapper</title>
+   <link href="style.css" rel="stylesheet" type="text/css">
+   <script type="text/javascript" src="chan.js"></script>
+    </head>
+ <body onload="js_video_start(); init();">
+  <script type="text/javascript">
+
+   var start_channel=1;
+   var end_channel=10;
+   var use_ASTB = true;
+   var channel_selected = false;
+   var display_debug_messages = false;
+   var active_channel_count = 0;
+
+   //default, start channel 1
+   var play_channel = 1;
+
+   var channel = getUrlVars()["channel"];
+   if(channel)
+   {
+  
+    play_channel = channel;
+        channel_selected = true;
+   }
+
+
+   function init()
+   {
+    
+    
+    //Setup channel list
+
+    //go through all channels in STB and pull stream data
+    for(current_channel=start_channel;current_channel<=end_channel;current_channel++)
+    {
+     //get channel info from ASTB
+        var chan_info_arr = getChannelInfo(current_channel);
+        if(chan_info_arr)
+        {
+         add(current_channel, chan_info_arr[0], chan_info_arr[1]);
+//Use dom to put an entry in EPG
+
+                                        var dv=document.createElement('div');
+                                        if(chan_info_arr[1] == '')
+                                        {
+                                        	chan_info_arr[1] = 'No Channel Name';
+                                        }
+                                        var div_content = current_channel + ': ' + chan_info_arr[1];
+                                        //alert('div_content: ' + div_content);
+					var txt=document.createTextNode(div_content);
+					dv.appendChild(txt);
+
+                                        var div_index = 'selection_' + active_channel_count;
+                                        dv.setAttribute('id', div_index);
+
+					document.getElementById('epg_inner').appendChild(dv);
+
+                                        if(active_channel_count == last_epg_channel)
+                                        {
+                                        	dv.style.backgroundColor = 'aqua';
+                                        }
+                                        else
+                                        {
+                                        	dv.style.backgroundColor = 'grey';
+                                        }
+
+                                        //create mapping in array for list index against channel number?
+                                        //index_channel_map.push(chan_info_arr[0]);
+                                        index_channel_map.push(current_channel);
+                                        current_channel
+                active_channel_count ++;
+
+                var message_text = 'channel stream: ' + chan_info_arr[0] + ' ::channel name: ' + chan_info_arr[1];
+                debugMessage(message_text);
+
+        }
+
+    }
+
+    if(active_channel_count == 0)
+    {
+     //there are no live channels, redirect to channel.html
+        var message_text = 'No configured channels, redirecting to channel setup';
+        debugMessage(message_text);
+        alert("No configured channels, redirecting to channel config page");
+        window.location.href = 'chan.html';
+    }
+
+	
+	
+    //Select initial stream
+    if(use_ASTB)
+    {
+     addChannelList(start_channel, end_channel);
+        if(channel_selected)
+        {
+                // NOTE start() does some weird cookie check which may skew results
+                // Use play to force specific channel
+         play(play_channel);
+        }
+        else
+        {
+
+         start(play_channel);
+        }
+    }
+
+
+    var message_text = 'start channel = ' + play_channel + ' : channel requested = ' + channel_selected;
+    debugMessage(message_text);
+
+   }
+
+   function getChannelInfo(channel_number)
+   {
+
+        var url_string = '';
+        if(use_ASTB)
+        {
+         url_string = ASTB.GetChannel(channel_number);
+        }
+        else
+        {
+         //generate dummy
+                if(channel_number < 11) //ONE OFF CHANNEL WITH NO NAME
+                {
+                 url_string = 'igmp://225.242.100.' + channel_number +':1234';
+                }
+                /*
+                else if(channel_number < 6)
+                {
+                 url_string = 'igmp://225.242.100.' + channel_number + ':5000?chan_name=dummy name ' + channel_number;
+               */
+                }
+                else
+                {
+                 url_string = null;
+                }
+        }
+
+        if(url_string)
+        {
+         //first split url string on '?chan_name='
+         var url_info_arr = url_string.split('?chan_name=');
+
+                if(url_info_arr[1])
+                {
+                 //just return it
+                        return url_info_arr;
+                }
+                else // its not an array so no channel name, create array
+                {
+                 url_info_arr = new Array();
+                        url_info_arr[0] = url_string;
+                        url_info_arr[1] = '';
+                }
+
+                return url_info_arr;
+        }
+        else
+        {
+         return false;
+        }
+
+
+   }
+
+   function getUrlVars()
+   {
+ var vars = {};
+ var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {vars[key] = value;});
+ return vars;
+   }
+
+   function debugMessage(message_text)
+   {
+    if(display_debug_messages)
+        {
+         alert(message_text);
+        }
+   }
+
+function js_video_start()
+{
+	ASTB.DebugString("handle_event()");
+   AVMedia.onEvent="handle_event()";
+	AVMedia.Play(osd_chan);
+}
+
+var queuedPlay = false;
+
+// example event handler
+
+function handle_event()
+{
+	ASTB.DebugString("handle_event()");
+	videostatus = AVMedia.Event;
+	eventString = AVMedia.EventString;
+	switch (videostatus)
+	{
+		case 4:
+			ASTB.DebugString("RTSP connection died "+eventString);
+	  		AVMedia.Kill();
+	  		alert("RTSP connection died");
+			if( ! queuedPlay ) {
+				queuedPlay = true;
+				setTimeout( "PlayLoop()", 3000 );
+			}
+		break;
+		case 12:
+			ASTB.DebugString("status RTSP_CONNECTION_STOPPED "+eventString);
+	 	        AVMedia.Kill();			
+			if( ! queuedPlay ) {	
+				queuedPlay = true;
+				setTimeout( "PlayLoop()", 3000 );
+			}
+		   break;
+		   
+	   case 52:
+			ASTB.DebugString("Zapper status RTSP_PAUSED "+eventString);
+	 	        AVMedia.Kill();			
+			if( ! queuedPlay ) {	
+				queuedPlay = true;
+				setTimeout( "PlayLoop()", 3000 );
+			}
+		   break;
+		   
+		   
+//		default:
+//		ASTB.DebugString("status "+videostatus+" "+eventString);
+//		break;
+	}
+}
+
+function nostreamerror()
+{
+alert("end of stream");
+}
+
+function PlayLoop()
+{
+   AVMediaPlay(osd_chan);
+   queuedPlay = false;
+}
+
+   </script>
+
+  <div id="channel_popup"></div>
+  <div id="channel_info"></div>
+  <div id="channel_menu"></div>
+       <!-- epg panel -->
+                <div id="epg_panel" style="position:absolute;top:43px;left:25px;height:300px;width:200px;display:none;background-color:transparent;margin-left:auto;margin-right:auto;padding-left:10px;">
+                        <div style="width:150px; color:yellow;"><p style="font-size:22px">Channel List:</div>
+                        <div id="scroll_wrapper" style="position:absolute;border:2px inset;width:150px;height:250px;overflow:hidden;">
+	                	<div id="epg_inner" style="background-color:grey;width:100%;position:absolute;top:0;">
+                                <!-- use DOM to put your channel lst here -->
+	                        </div>
+                        </div>
+                </div>
+
+                                
+ </body>
+</html>
