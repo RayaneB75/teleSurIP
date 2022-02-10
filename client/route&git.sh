@@ -16,5 +16,5 @@ sudo apt update
 sudo apt install git vlc -y
 
 mkdir /tmp/apache2
-sudo mv /var/www/html/* /tmp/apache2
-sudo git clone https://github.com/RayaneB75/teleSurIP /var/html
+sudo mv /var/www/* /tmp/apache2
+sudo git clone https://github.com/RayaneB75/teleSurIP /var/www
