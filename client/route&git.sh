@@ -13,6 +13,8 @@ sudo ip route add 225.0.0.0/8 dev $eth
 curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
 sudo apt update
-sudo apt install gh vlc -y
+sudo apt install git vlc -y
 
-gh repo clone RayaneB75/teleSurIP
+mkdir /tmp/apache2
+sudo mv /var/www/html/* /tmp/apache2
+sudo git clone https://github.com/RayaneB75/teleSurIP /var/html
