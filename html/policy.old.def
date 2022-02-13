@@ -1,0 +1,9 @@
+ACCEPT:file://localhost/mnt/nv/chan.html
+ACCEPT:file://localhost/mnt/nv/index.html*
+ACCEPT:file://localhost/mnt/nv/style.css
+ACCEPT:file://localhost/mnt/nv/chan.css
+ACCEPT:file://localhost/mnt/nv/chan.js
+ACCEPT:file://localhost/mnt/nv/opera_keys.js
+ACCEPT:file://localhost/mnt/nv/chan2.js
+ACCEPT:file://localhost/mnt/nv/user.js
+ACCEPT:file://mnt/nv/index.html
