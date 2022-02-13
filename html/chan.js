@@ -250,7 +250,7 @@ var Small_arrow_up		= 8525
 var Small_arrow_down		= 8490
 
 /* Channel list is an array of:-
-        channel number, URI to use, description (optional), uses existing chnls.txt file on stb to store channel info
+channel number, URI to use, description (optional), uses existing chnls.txt file on stb to store channel info
 */     
 
 var channel_list = new Array();
@@ -542,13 +542,13 @@ function chan_init()
         try 
         {
             // Setup background colour to what the background colour in CSS
-            // is set to.			
+            // is set to.
             //backgroundColour = document.body.style.backgroundColor;
 
             // Just set Chromakey and reset background colour to that value
-// For older STB            
-//ASTB.DefaultKeys(0);
-//ASTB.WithChannels(0);
+            // For older STB
+            //ASTB.DefaultKeys(0);
+            //ASTB.WithChannels(0);
            
             ASTB.SetMouseState(false);
             Browser.SetToolbarState(false);
