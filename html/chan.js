@@ -238,7 +238,7 @@ var REMOTE_TELETEXT_YELLOW          = 8514
 var REMOTE_TELETEXT_BLUE            = 8515
 var REMOTE_TELETEXT_BUTON	            = 8577
 var REMOTE_TELETEXT_BUTOFF	            = 8572
-var OK_BUTTON								= 13	
+var OK_BUTTON								= 13
 
 /* used for EPG */
 var REMOTE_GUIDE		    = 8537
@@ -251,7 +251,7 @@ var Small_arrow_down		= 8490
 
 /* Channel list is an array of:-
 channel number, URI to use, description (optional), uses existing chnls.txt file on stb to store channel info
-*/     
+*/
 
 var channel_list = new Array();
 var initted = false;
