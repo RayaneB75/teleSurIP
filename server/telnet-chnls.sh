@@ -10,16 +10,13 @@ sudo mkdir /srv/ftp/
 sudo cp chnls.txt /srv/ftp
 sudo chmod 777 /srv/ftp/chnls.txt
 
-
 ######## Configuration IP de la machine : ########
 sudo ip a flush $eth > /dev/null
 sudo ip a add 192.168.1.1 dev $eth > /dev/null
 
-
-
+######## Demande à l'utilisateur ########
 echo -e "Combien d'Amino à configurer"
 read nb
-
 echo
 echo
 
