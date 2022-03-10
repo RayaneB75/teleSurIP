@@ -2,20 +2,30 @@
 
 ######## Configurer le serveur FTP via Telnet ########
 sudo apt update > /dev/null
-sudo apt install vsftpd -y > /dev/null
-######## On déplace le fichier de configuration et on redémarre le service VFTDP ########
-sudo cp ./vsftpd.conf /etc/vsftpd.conf
-sudo /etc/init.d/vsftpd restart
-sudo mkdir /srv/ftp/
-sudo cp chnls.txt /srv/ftp
-sudo chmod 777 /srv/ftp/chnls.txt
+sudo apt install vsftpd apache2 -y > /dev/null
 
+######## Configuration Apache2 ########
+sudo cp ../html /var/www/html > /dev/null
+sudo /etc/init.d/apache2 restart
+mkdir /tmp/apache2 > /dev/null
+sudo mv /var/www/* /tmp/apache2 > /dev/null
+
+######## On déplace le fichier de configuration et on redémarre le service VFTDP ########
+sudo cp ./vsftpd.conf /etc/vsftpd.conf > /dev/null
+sudo /etc/init.d/vsftpd restart
+[[ $? -ne 0 ]] && echo 
+sudo mkdir /srv/ftp/ > /dev/null
+sudo cp chnls.txt /srv/ftp > /dev/null
+sudo chmod 777 /srv/ftp/chnls.txt > /dev/null
+sudo chown nobody /srv/ftp/chnls.txt > /dev/null
 ######## Configuration IP de la machine : ########
-sudo ip a flush $eth > /dev/null
-sudo ip a add 192.168.1.1 dev $eth > /dev/null
+echo -e "\nInterface ethernet utilisée pour se connecter aux Amino ?" 
+read int
+sudo ip a flush $int > /dev/null
+sudo ip a add 192.168.1.1 dev $int > /dev/null
 
 ######## Demande à l'utilisateur ########
-echo -e "Combien d'Amino à configurer"
+echo -e "\nCombien d'Amino à configurer"
 read nb
 echo
 echo
@@ -46,7 +56,7 @@ do
 	sleep 1; } | telnet ${var[j]}
 	echo
 	echo
-	echo -e 'Si la derniere ligne donne 11, script OK'
-	echo 
+	echo -e 'Si la derniere ligne donne 11, script \033[32m OK\033[0m, sinon \033[31m NOK\033[0m'
+	echo
 	echo
 done
