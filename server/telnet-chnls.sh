@@ -18,6 +18,7 @@ sudo mkdir /srv/ftp/ > /dev/null
 sudo cp chnls.txt /srv/ftp > /dev/null
 sudo chmod 777 /srv/ftp/chnls.txt > /dev/null
 sudo chown nobody /srv/ftp/chnls.txt > /dev/null
+
 ######## Configuration IP de la machine : ########
 echo -e "\nInterface ethernet utilisée pour se connecter aux Amino ?" 
 read int
@@ -27,8 +28,7 @@ sudo ip a add 192.168.1.1 dev $int > /dev/null
 ######## Demande à l'utilisateur ########
 echo -e "\nCombien d'Amino à configurer"
 read nb
-echo
-echo
+echo && echo
 
 ######## Tableau d'IP Amino ########
 declare -a var
@@ -40,9 +40,9 @@ do
 	var+=($in)
 done
 
-echo
-echo
+echo && echo
 
+######## Récupération des fichiers via Telenet ########
 for j in ${var[@]}
 do
 	{ echo -e "root\n" ;\
