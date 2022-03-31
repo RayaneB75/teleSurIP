@@ -7,4 +7,4 @@ Exécutez le script ***[teleSurIP/server/telnet-chnls.sh](https://github.com/Ray
 Exécutez le script ***[teleSurIP/server/flux-multicast-client.sh](https://github.com/RayaneB75/teleSurIP/blob/main/server/flux-multicast-client.sh)***
 
 ## Aides
-Consultez le fichier ***[teleSurIP/Rapport de projet.docx](https://github.com/RayaneB75/teleSurIP/blob/main/Rapport%20de%20projet.docx)***
+Consultez le fichier ***[teleSurIP/Rapport de projet.pdf](https://github.com/RayaneB75/teleSurIP/blob/main/Rapport%20de%20projet.pdf)***
